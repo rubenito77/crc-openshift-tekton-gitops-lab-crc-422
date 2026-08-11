@@ -1,0 +1,29 @@
+FROM registry.access.redhat.com/ubi9/python-312:latest
+
+ARG APP_VERSION=1.0.0
+ARG GIT_COMMIT=unknown
+
+ENV APP_NAME=app-demo
+ENV APP_VERSION=${APP_VERSION}
+ENV APP_ENVIRONMENT=dev
+ENV GIT_COMMIT=${GIT_COMMIT}
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /opt/app-root/src
+
+USER 0
+
+COPY app/requirements.txt ./requirements.txt
+
+RUN python -m pip install --no-cache-dir --disable-pip-version-check -r requirements.txt
+
+COPY --chown=1001:0 app/main.py ./main.py
+
+RUN chmod -R g=u /opt/app-root/src
+
+USER 1001
+
+EXPOSE 8080
+
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
