@@ -1,0 +1,10 @@
+﻿apiVersion: operator.tekton.dev/v1alpha1
+kind: TektonConfig
+metadata:
+  name: config
+  labels:
+    app.kubernetes.io/name: openshift-pipelines
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  profile: basic
+  targetNamespace: openshift-pipelines
