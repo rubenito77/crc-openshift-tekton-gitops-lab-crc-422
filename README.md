@@ -1,4 +1,3 @@
-$README = @'
 # CRC OpenShift Tekton GitOps Lab - OCP 4.22
 
 Laboratorio practico de CI/CD sobre un cluster local OpenShift creado con CRC.
@@ -71,3 +70,84 @@ Tekton Pipeline
           |
           v
     tekton-demo-dev
+```
+
+## Namespaces
+
+| Namespace | Uso |
+| --- | --- |
+| `openshift-pipelines` | Componentes administrados por el operador |
+| `tekton-cicd` | Tasks, Pipelines, PipelineRuns y credenciales de CI |
+| `tekton-demo-dev` | Aplicacion desplegada por Argo CD |
+| `openshift-gitops` | Instancia de Argo CD |
+
+## Estrategia de imagenes
+
+Las imagenes utilizaran tags inmutables derivados del commit Git.
+
+Ejemplo:
+
+```text
+image-registry.openshift-image-registry.svc:5000/tekton-demo-dev/app-demo:506d253
+```
+
+No se utilizara `latest` para promover versiones.
+
+## Estrategia de implementacion
+
+La POC se construira incrementalmente:
+
+1. Instalacion declarativa de OpenShift Pipelines.
+2. Aplicacion FastAPI y pruebas unitarias.
+3. Containerfile.
+4. Manifiestos Kustomize.
+5. Application de Argo CD.
+6. Tasks de Tekton.
+7. Pipeline CI.
+8. PipelineRun manual.
+9. Actualizacion automatica de Git.
+10. Triggers y webhook de GitHub.
+11. Versionado y rollback.
+
+## Estructura prevista
+
+```text
+crc-openshift-tekton-gitops-lab-crc-422/
+|-- .gitattributes
+|-- README.md
+|-- VERSION
+|-- app/
+|-- tests/
+|-- container/
+|-- deploy/
+|   |-- base/
+|   `-- overlays/
+|       `-- dev/
+|-- tekton/
+|   |-- rbac/
+|   |-- tasks/
+|   |-- pipelines/
+|   |-- runs/
+|   `-- triggers/
+|-- argocd/
+|-- operators/
+|   `-- openshift-pipelines/
+|-- scripts/
+`-- docs/
+```
+
+## Estado
+
+- [x] Repositorio GitHub creado.
+- [x] Red Hat OpenShift GitOps disponible.
+- [x] Red Hat OpenShift Pipelines instalado.
+- [x] TektonConfig configurado con perfil `basic`.
+- [ ] Aplicacion FastAPI.
+- [ ] Pruebas unitarias.
+- [ ] Construccion de imagen.
+- [ ] Manifiestos Kustomize.
+- [ ] Application de Argo CD.
+- [ ] Pipeline CI.
+- [ ] Primera ejecucion manual.
+- [ ] Triggers y webhook.
+- [ ] Prueba de rollback.
