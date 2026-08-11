@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: app-demo-pytest-
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: test
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  serviceAccountName: pipeline
+  taskRef:
+    name: app-demo-pytest
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: app-demo-source

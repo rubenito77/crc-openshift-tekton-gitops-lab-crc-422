@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: app-demo-pytest
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: test
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  description: Install test dependencies and execute the FastAPI unit tests.
+  workspaces:
+    - name: source
+      description: Workspace containing the cloned repository.
+  results:
+    - name: test-status
+      description: Final status of the unit tests.
+  steps:
+    - name: pytest
+      image: registry.access.redhat.com/ubi9/python-312@sha256:84f6704ea5ae85bb1ed8fa5ac6e93a0f4dbde0345adf3f6220882d04f55c9d3c
+      env:
+        - name: HOME
+          value: /tekton/home
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        REPOSITORY_DIR="$(workspaces.source.path)/repository"
+        VENV_DIR="$(workspaces.source.path)/pytest-venv"
+
+        test -f "${REPOSITORY_DIR}/app/requirements-test.txt"
+        test -f "${REPOSITORY_DIR}/tests/test_main.py"
+
+        cd "${REPOSITORY_DIR}"
+
+        rm -rf "${VENV_DIR}"
+
+        python -m venv "${VENV_DIR}"
+        "${VENV_DIR}/bin/python" -m pip install --no-cache-dir --disable-pip-version-check -r "${REPOSITORY_DIR}/app/requirements-test.txt"
+        "${VENV_DIR}/bin/python" -m pytest -v "${REPOSITORY_DIR}/tests"
+
+        printf '%s' 'passed' > "$(results.test-status.path)"
+
+        echo "All unit tests passed"
+
