@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tekton-cicd
+  labels:
+    environment: cicd
+    purpose: continuous-integration
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tekton-demo-dev
+  labels:
+    environment: dev
+    argocd.argoproj.io/managed-by: openshift-gitops
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
