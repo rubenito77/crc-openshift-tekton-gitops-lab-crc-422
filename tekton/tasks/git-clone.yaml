@@ -1,0 +1,55 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: app-demo-git-clone
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: ci
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  description: Clone the application repository and report the resolved commit.
+  params:
+    - name: url
+      type: string
+      description: Git repository URL.
+    - name: revision
+      type: string
+      description: Git branch or tag to clone.
+      default: main
+  workspaces:
+    - name: source
+      description: Workspace shared by the pipeline.
+  results:
+    - name: commit
+      description: Full Git commit SHA checked out by this task.
+  steps:
+    - name: clone
+      image: registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel9@sha256:d8de2ba836fe94183804e10e122a9e19ff480a63be43feeaf3bc88d5f32c21cb
+      env:
+        - name: HOME
+          value: /tekton/home
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+
+        TARGET_DIR="$(workspaces.source.path)/repository"
+
+        rm -rf "${TARGET_DIR}"
+
+        git clone \
+          --no-tags \
+          --single-branch \
+          --branch "$(params.revision)" \
+          "$(params.url)" \
+          "${TARGET_DIR}"
+
+        cd "${TARGET_DIR}"
+
+        COMMIT_SHA="$(git rev-parse HEAD)"
+
+        printf '%s' "${COMMIT_SHA}" > "$(results.commit.path)"
+
+        echo "Repository cloned successfully"
+        echo "Revision: $(params.revision)"
+        echo "Commit: ${COMMIT_SHA}"
