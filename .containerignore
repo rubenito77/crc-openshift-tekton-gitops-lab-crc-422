@@ -1,0 +1,16 @@
+.git
+.gitattributes
+.gitignore
+.containerignore
+.venv
+__pycache__
+.pytest_cache
+*.pyc
+tests
+deploy
+tekton
+argocd
+operators
+scripts
+docs
+README.md
