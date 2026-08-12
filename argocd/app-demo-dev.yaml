@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-demo-dev
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/instance: app-demo-dev
+    app.kubernetes.io/environment: dev
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rubenito77/crc-openshift-tekton-gitops-lab-crc-422.git
+    targetRevision: main
+    path: deploy/environments/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tekton-demo-dev
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+      - ApplyOutOfSyncOnly=true
