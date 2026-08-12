@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app-demo-dev
+  name: app-demo-tekton-dev
   namespace: openshift-gitops
   labels:
     app.kubernetes.io/name: app-demo
-    app.kubernetes.io/instance: app-demo-dev
+    app.kubernetes.io/instance: app-demo-tekton-dev
     app.kubernetes.io/environment: dev
     app.kubernetes.io/part-of: crc-tekton-gitops-lab
 spec:
@@ -21,3 +21,4 @@ spec:
     syncOptions:
       - CreateNamespace=false
       - ApplyOutOfSyncOnly=true
+
