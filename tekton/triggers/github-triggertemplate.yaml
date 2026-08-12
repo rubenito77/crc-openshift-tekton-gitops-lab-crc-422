@@ -40,7 +40,7 @@ spec:
           - name: image
             value: image-registry.openshift-image-registry.svc:5000/tekton-demo-dev/app-demo
           - name: app-version
-            value: 1.0.0
+            value: 2.0.0
           - name: tls-verify
             value: "false"
         workspaces:

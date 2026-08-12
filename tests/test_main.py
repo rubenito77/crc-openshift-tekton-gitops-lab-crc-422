@@ -10,7 +10,7 @@ def test_home() -> None:
 
     assert response.status_code == 200
     assert "OpenShift Tekton GitOps en CRC" in response.text
-    assert "V1 - Version 1.0.0" in response.text
+    assert "V2 - Version 2.0.0" in response.text
 
 
 def test_health() -> None:
@@ -33,7 +33,7 @@ def test_info() -> None:
     assert response.status_code == 200
     assert response.json() == {
         "name": "app-demo",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "environment": "dev",
         "git_commit": "local",
     }

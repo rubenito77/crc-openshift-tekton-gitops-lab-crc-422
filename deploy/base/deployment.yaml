@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: app-demo
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: crc-tekton-gitops-lab
-    app.kubernetes.io/version: v1
+    app.kubernetes.io/version: v2
 spec:
   replicas: 1
   selector:
@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/name: app-demo
         app.kubernetes.io/component: backend
         app.kubernetes.io/part-of: crc-tekton-gitops-lab
-        app.kubernetes.io/version: v1
+        app.kubernetes.io/version: v2
     spec:
       serviceAccountName: app-demo
       containers:
