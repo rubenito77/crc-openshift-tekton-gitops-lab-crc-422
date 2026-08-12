@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-demo
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: app-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

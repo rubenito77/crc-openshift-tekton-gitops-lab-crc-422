@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: app-demo
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  to:
+    kind: Service
+    name: app-demo
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
