@@ -8,14 +8,14 @@ metadata:
     app.kubernetes.io/component: ci
     app.kubernetes.io/part-of: crc-tekton-gitops-lab
 spec:
-  description: Clone, test, build and publish the App Demo image.
+  description: Clone, test, build, publish and update the GitOps image tag.
   params:
     - name: repository-url
       type: string
-      description: Public Git repository URL.
+      description: Public Git repository URL used for cloning.
     - name: revision
       type: string
-      description: Git branch or tag.
+      description: Git branch or tag to build.
       default: main
     - name: image
       type: string
@@ -27,6 +27,14 @@ spec:
       type: string
       description: Verify TLS when pushing to the registry.
       default: "false"
+    - name: gitops-repository-url
+      type: string
+      description: Writable SSH repository URL.
+      default: git@github.com:rubenito77/crc-openshift-tekton-gitops-lab-crc-422.git
+    - name: gitops-branch
+      type: string
+      description: Branch containing the GitOps manifests.
+      default: main
   workspaces:
     - name: source
       description: Shared workspace for source code and test dependencies.
@@ -46,6 +54,12 @@ spec:
     - name: image-digest
       description: Published image digest.
       value: $(tasks.buildah.results.image-digest)
+    - name: gitops-changed
+      description: Whether the GitOps manifest was changed.
+      value: $(tasks.update-git.results.changed)
+    - name: gitops-commit
+      description: Git commit containing the deployed image tag.
+      value: $(tasks.update-git.results.git-commit)
   tasks:
     - name: git-clone
       taskRef:
@@ -84,6 +98,24 @@ spec:
           value: $(tasks.git-clone.results.commit)
         - name: tls-verify
           value: $(params.tls-verify)
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: update-git
+      runAfter:
+        - buildah
+      taskRef:
+        name: app-demo-update-git
+      params:
+        - name: repository-url
+          value: $(params.gitops-repository-url)
+        - name: branch
+          value: $(params.gitops-branch)
+        - name: manifest-path
+          value: deploy/environments/dev/kustomization.yaml
+        - name: image-tag
+          value: $(tasks.git-clone.results.commit-short)
       workspaces:
         - name: source
           workspace: source
