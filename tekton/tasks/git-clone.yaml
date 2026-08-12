@@ -15,7 +15,7 @@ spec:
       description: Git repository URL.
     - name: revision
       type: string
-      description: Git branch or tag to clone.
+      description: Git branch, tag, or commit SHA to check out.
       default: main
   workspaces:
     - name: source
@@ -39,14 +39,11 @@ spec:
 
         rm -rf "${TARGET_DIR}"
 
-        git clone \
-          --no-tags \
-          --single-branch \
-          --branch "$(params.revision)" \
-          "$(params.url)" \
-          "${TARGET_DIR}"
+        git clone "$(params.url)" "${TARGET_DIR}"
 
         cd "${TARGET_DIR}"
+
+        git checkout --detach "$(params.revision)"
 
         COMMIT_SHA="$(git rev-parse HEAD)"
         COMMIT_SHORT="$(git rev-parse --short=7 HEAD)"
@@ -58,4 +55,3 @@ spec:
         echo "Revision: $(params.revision)"
         echo "Commit: ${COMMIT_SHA}"
         echo "Short commit: ${COMMIT_SHORT}"
-

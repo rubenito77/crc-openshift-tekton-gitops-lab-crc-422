@@ -1,0 +1,15 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: app-demo-github-push
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: trigger
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  params:
+    - name: repository-url
+      value: $(body.repository.clone_url)
+    - name: revision
+      value: $(body.after)

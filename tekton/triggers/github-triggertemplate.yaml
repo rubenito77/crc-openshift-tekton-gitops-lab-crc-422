@@ -1,0 +1,51 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: app-demo-github-push
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: trigger
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  params:
+    - name: repository-url
+      description: Repository clone URL received from GitHub.
+    - name: revision
+      description: Exact Git commit received from GitHub.
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: app-demo-ci-webhook-
+        namespace: tekton-cicd
+        labels:
+          app.kubernetes.io/name: app-demo
+          app.kubernetes.io/component: ci
+          app.kubernetes.io/part-of: crc-tekton-gitops-lab
+          trigger.tekton.dev/source: github
+      spec:
+        pipelineRef:
+          name: app-demo-ci
+        taskRunTemplate:
+          serviceAccountName: pipeline
+        taskRunSpecs:
+          - pipelineTaskName: buildah
+            serviceAccountName: buildah-builder
+        params:
+          - name: repository-url
+            value: $(tt.params.repository-url)
+          - name: revision
+            value: $(tt.params.revision)
+          - name: image
+            value: image-registry.openshift-image-registry.svc:5000/tekton-demo-dev/app-demo
+          - name: app-version
+            value: 1.0.0
+          - name: tls-verify
+            value: "false"
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: app-demo-source
+        timeouts:
+          pipeline: 30m
