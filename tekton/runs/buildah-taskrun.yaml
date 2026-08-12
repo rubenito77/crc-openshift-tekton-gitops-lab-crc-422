@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: app-demo-buildah-
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: build
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  serviceAccountName: buildah-builder
+  taskRef:
+    name: app-demo-buildah
+  params:
+    - name: image
+      value: image-registry.openshift-image-registry.svc:5000/tekton-demo-dev/app-demo
+    - name: tag
+      value: 7c354ad
+    - name: app-version
+      value: 1.0.0
+    - name: git-commit
+      value: 7c354addb2cdb46822b5de1733ed945d69e985d6
+    - name: tls-verify
+      value: "false"
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: app-demo-source

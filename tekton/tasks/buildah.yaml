@@ -1,0 +1,81 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: app-demo-buildah
+  namespace: tekton-cicd
+  annotations:
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: build
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  description: Build and push the application image with the dedicated Buildah builder.
+  params:
+    - name: image
+      type: string
+      description: Image repository without tag.
+    - name: tag
+      type: string
+      description: Immutable image tag.
+    - name: app-version
+      type: string
+      description: Application version embedded in the image.
+    - name: git-commit
+      type: string
+      description: Git commit embedded in the image.
+    - name: tls-verify
+      type: string
+      description: Verify TLS when pushing the image.
+      default: "false"
+  workspaces:
+    - name: source
+      description: Workspace containing the cloned repository.
+  results:
+    - name: image-url
+      description: Full image reference including the tag.
+    - name: image-digest
+      description: Digest returned by the registry.
+  volumes:
+    - name: containers-storage
+      emptyDir: {}
+  steps:
+    - name: build-and-push
+      image: registry.redhat.io/rhel9/buildah@sha256:43905f40b285c32725fd6239c236df7a6bfc562e5c1b7d8338dc369a2aa2b9f8
+      securityContext:
+        privileged: true
+        runAsUser: 0
+        allowPrivilegeEscalation: true
+      env:
+        - name: HOME
+          value: /tekton/home
+        - name: REGISTRY_AUTH_FILE
+          value: /tekton/home/.docker/config.json
+      volumeMounts:
+        - name: containers-storage
+          mountPath: /var/lib/containers
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        REPOSITORY_DIR="$(workspaces.source.path)/repository"
+        DESTINATION="$(params.image):$(params.tag)"
+
+        test -f "${REPOSITORY_DIR}/container/Containerfile"
+        test -f "${REGISTRY_AUTH_FILE}"
+
+        echo "Runtime identity:"
+        id
+
+        echo "Building ${DESTINATION}"
+
+        buildah --storage-driver=vfs bud --format=oci --layers=false --file "${REPOSITORY_DIR}/container/Containerfile" --build-arg "APP_VERSION=$(params.app-version)" --build-arg "GIT_COMMIT=$(params.git-commit)" --tag "${DESTINATION}" "${REPOSITORY_DIR}"
+
+        echo "Pushing ${DESTINATION}"
+
+        buildah --storage-driver=vfs push --tls-verify="$(params.tls-verify)" --digestfile "$(results.image-digest.path)" "${DESTINATION}" "docker://${DESTINATION}"
+
+        printf '%s' "${DESTINATION}" > "$(results.image-url.path)"
+
+        echo "Image published successfully"
+        echo "Image: ${DESTINATION}"
+        echo "Digest: $(cat "$(results.image-digest.path)")"
