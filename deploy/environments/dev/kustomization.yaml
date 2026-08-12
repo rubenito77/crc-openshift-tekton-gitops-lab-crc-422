@@ -8,7 +8,7 @@ resources:
 
 images:
   - name: image-registry.openshift-image-registry.svc:5000/tekton-demo-dev/app-demo
-    newTag: 04071cd
+    newTag: 3b7e3b2
 
 labels:
   - pairs:
