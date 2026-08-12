@@ -23,6 +23,8 @@ spec:
   results:
     - name: commit
       description: Full Git commit SHA checked out by this task.
+    - name: commit-short
+      description: Short Git commit SHA used as the immutable image tag.
   steps:
     - name: clone
       image: registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel9@sha256:d8de2ba836fe94183804e10e122a9e19ff480a63be43feeaf3bc88d5f32c21cb
@@ -47,9 +49,13 @@ spec:
         cd "${TARGET_DIR}"
 
         COMMIT_SHA="$(git rev-parse HEAD)"
+        COMMIT_SHORT="$(git rev-parse --short=7 HEAD)"
 
         printf '%s' "${COMMIT_SHA}" > "$(results.commit.path)"
+        printf '%s' "${COMMIT_SHORT}" > "$(results.commit-short.path)"
 
         echo "Repository cloned successfully"
         echo "Revision: $(params.revision)"
         echo "Commit: ${COMMIT_SHA}"
+        echo "Short commit: ${COMMIT_SHORT}"
+

@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: app-demo-ci-
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: ci
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  pipelineRef:
+    name: app-demo-ci
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  taskRunSpecs:
+    - pipelineTaskName: buildah
+      serviceAccountName: buildah-builder
+  params:
+    - name: repository-url
+      value: https://github.com/rubenito77/crc-openshift-tekton-gitops-lab-crc-422.git
+    - name: revision
+      value: main
+    - name: image
+      value: image-registry.openshift-image-registry.svc:5000/tekton-demo-dev/app-demo
+    - name: app-version
+      value: 1.0.0
+    - name: tls-verify
+      value: "false"
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: app-demo-source
+  timeouts:
+    pipeline: 30m
+

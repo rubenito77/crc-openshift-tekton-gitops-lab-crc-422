@@ -1,0 +1,89 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: app-demo-ci
+  namespace: tekton-cicd
+  labels:
+    app.kubernetes.io/name: app-demo
+    app.kubernetes.io/component: ci
+    app.kubernetes.io/part-of: crc-tekton-gitops-lab
+spec:
+  description: Clone, test, build and publish the App Demo image.
+  params:
+    - name: repository-url
+      type: string
+      description: Public Git repository URL.
+    - name: revision
+      type: string
+      description: Git branch or tag.
+      default: main
+    - name: image
+      type: string
+      description: Internal image repository without tag.
+    - name: app-version
+      type: string
+      description: Application version embedded in the image.
+    - name: tls-verify
+      type: string
+      description: Verify TLS when pushing to the registry.
+      default: "false"
+  workspaces:
+    - name: source
+      description: Shared workspace for source code and test dependencies.
+  results:
+    - name: commit
+      description: Full Git commit built by this pipeline.
+      value: $(tasks.git-clone.results.commit)
+    - name: commit-short
+      description: Short Git commit used as the image tag.
+      value: $(tasks.git-clone.results.commit-short)
+    - name: test-status
+      description: Unit test result.
+      value: $(tasks.pytest.results.test-status)
+    - name: image-url
+      description: Published image reference.
+      value: $(tasks.buildah.results.image-url)
+    - name: image-digest
+      description: Published image digest.
+      value: $(tasks.buildah.results.image-digest)
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: app-demo-git-clone
+      params:
+        - name: url
+          value: $(params.repository-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: pytest
+      runAfter:
+        - git-clone
+      taskRef:
+        name: app-demo-pytest
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: buildah
+      runAfter:
+        - pytest
+      taskRef:
+        name: app-demo-buildah
+      params:
+        - name: image
+          value: $(params.image)
+        - name: tag
+          value: $(tasks.git-clone.results.commit-short)
+        - name: app-version
+          value: $(params.app-version)
+        - name: git-commit
+          value: $(tasks.git-clone.results.commit)
+        - name: tls-verify
+          value: $(params.tls-verify)
+      workspaces:
+        - name: source
+          workspace: source

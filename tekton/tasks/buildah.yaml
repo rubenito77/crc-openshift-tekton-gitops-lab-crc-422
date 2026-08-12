@@ -3,7 +3,6 @@ kind: Task
 metadata:
   name: app-demo-buildah
   namespace: tekton-cicd
-  annotations:
   labels:
     app.kubernetes.io/name: app-demo
     app.kubernetes.io/component: build
